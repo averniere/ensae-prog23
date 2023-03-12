@@ -164,6 +164,7 @@ par n*m. D'où une complexité en O(n*m).
                 return self.get_path_with_power(src,dest,d),int(d)+1
         while self.get_path_with_power(src, dest, d)==None: #condition nécessaire si au début une 
             #puissance inférieure à 1 ne suffit pas pour effectuer le trajet voulu
+            g=d
             d=10*d
         return rechdicho(g,d)
         
@@ -177,7 +178,7 @@ D'où une complexité en O(log2((d-g)/eps))
 On note à présent p la puissance maximale existante sur le graphe. 
 Dans le pire des cas, l'on doit passer par l'arête de puissance p. Si p>1 on doit parcourir la boucle
 while de la fin du code E(log10(p))+1 fois, soit un coût de O(log10(p)).
-On connaît la complexité dee get_path_with_power appelée environ log10(p) fois dans min_power.
+On connaît la complexité de get_path_with_power appelée environ log10(p) fois dans min_power.
     '''
 
 def graph_from_file(filename):
@@ -200,9 +201,27 @@ def graph_from_file(filename):
     g: Graph
         An object of the class Graph with the graph from file_name.
     """
+    '''
+    file = open(filename,'r', encoding="utf-8")
+    lines = file.readlines()
+    file.close()
+    g=Graph([i for i in range(1, int(lines.pop(0).split()[0])+1)])
+    for line in lines:
+        words= line.split()
+        if len(words)==3:
+            g.add_edge(int(words[0]), int(words[1]), int(words[2]))
+        else:
+            g.add_edge(int(words[0]), int(words[1]), int(words[2]), int(words[3]))
+    return(g)
+    '''
     with open(filename, "r") as file:
-        n, m = map(int, file.readline().split())
-        g = Graph(range(1, n+1))
+        L=list(map(int, file.readline().split()))
+        if len(L)==2:
+            n, m = L
+            g = Graph(range(1, n+1))
+        elif len(L)==1:
+            m=L[0]
+            g= Graph(range(1,m+1))
         for _ in range(m):
             edge = list(map(int, file.readline().split()))
             if len(edge) == 3:
