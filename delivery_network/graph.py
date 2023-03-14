@@ -103,7 +103,9 @@ A chaque fois que l'on tombe dans une impasse, ie un noeud qui n'a pas d'autre v
 le camion vient, le camion doit retourner en arrière et reparcourir les voisins du noeud précédent, 
 jusqu'à trouver, ou non, un nouveau chemin par où passer. On peut majorer le nombre de fois où l'on 
 effectue les opérations de la boucle for (nombre d'opérations borné, donc en O(1) à chaque itération) 
-par n*m. D'où une complexité en O(n*m).
+par n*m. D'où une complexité en O(n*m) dans le cas où le nombre d'impasses est important.
+Toutefois, il est rare qu'un graphe contienne un grand nombre d'impasses. Il est donc raisonnable d'
+envisager une complexité en O(n) où n est le nombre de noeud du graphe.
     '''
     
 #Détermination des composantes connexes d'un graphe:
@@ -174,11 +176,15 @@ Déterminons d'abord la complexité de la fonction de recherche dichotomique. Et
 à chaque fois par deux la taille de l'intervalle, originalement de taille d-g, jusqu'à obtenir une 
 longueur d'intervalle inférieure à eps, le nombre total d'itération N effectué vérifie:
 N=E(log2((d-g)/eps)) +1 où E désigne la partie entière
-D'où une complexité en O(log2((d-g)/eps))
+D'où une complexité en O(log2((d-g)/eps)), si l'on fait abstraction que l'on effectue à chaque fois, au
+sein de la boucle while la fonction get_path_with power, dont on connaît la complexité. On en déduit une
+complexité de O(n*log2((d-g)/eps)) pour la fonction rech_dico, avec n le nombre total de noeuds du graphe.
 On note à présent p la puissance maximale existante sur le graphe. 
 Dans le pire des cas, l'on doit passer par l'arête de puissance p. Si p>1 on doit parcourir la boucle
 while de la fin du code E(log10(p))+1 fois, soit un coût de O(log10(p)).
-On connaît la complexité de get_path_with_power appelée environ log10(p) fois dans min_power.
+On connaît la complexité de get_path_with_power appelée environ log10(p) fois dans min_power. On en déduit
+la complexité totale de l'algorithme: O(n*(log10(p)+log2((d-g)/eps)))~O(n*log2((d-g)/eps)) si nlog10(p) 
+est négligeable devant l'autre terme.
     '''
 
 def graph_from_file(filename):
@@ -201,28 +207,11 @@ def graph_from_file(filename):
     g: Graph
         An object of the class Graph with the graph from file_name.
     """
-    '''
-    file = open(filename,'r', encoding="utf-8")
-    lines = file.readlines()
-    file.close()
-    g=Graph([i for i in range(1, int(lines.pop(0).split()[0])+1)])
-    for line in lines:
-        words= line.split()
-        if len(words)==3:
-            g.add_edge(int(words[0]), int(words[1]), int(words[2]))
-        else:
-            g.add_edge(int(words[0]), int(words[1]), int(words[2]), int(words[3]))
-    return(g)
-    '''
     with open(filename, "r") as file:
         L=list(map(int, file.readline().split()))
-        if len(L)==2:
-            n, m = L
-            g = Graph(range(1, n+1))
-        elif len(L)==1:
-            m=L[0]
-            g= Graph(range(1,m+1))
-        for _ in range(m):
+        n, q = L
+        g = Graph(range(1, n+1))
+        for _ in range(q):
             edge = list(map(int, file.readline().split()))
             if len(edge) == 3:
                 node1, node2, power_min = edge
